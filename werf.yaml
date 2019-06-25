@@ -1,0 +1,52 @@
+configVersion: 1
+project: mcrouter
+deploy:
+  namespace: '[[ env ]]'
+  helmRelease: '[[ project ]]-[[ env ]]'
+---
+image: mcrouter
+from: ubuntu:16.04
+mount:
+- from: tmp_dir
+  to: /var/lib/apt/lists
+- from: build_dir
+  to: /var/cache/apt
+ansible:
+  beforeInstall:
+  - name: Install prerequisites
+    apt:
+      name: [ 'apt-transport-https', 'tzdata', 'locales' ]
+      update_cache: yes
+  - name: Add mcrouter APT key
+    apt_key:
+      url: https://facebook.github.io/mcrouter/debrepo/xenial/PUBLIC.KEY
+  - name: Added mcrouter Repo
+    apt_repository:
+      repo: deb https://facebook.github.io/mcrouter/debrepo/xenial xenial contrib
+      filename: mcrouter
+      update_cache: yes
+  - name: Set timezone
+    timezone:
+      name: "Europe/Moscow"
+  - name: Ensure a locale exists
+    locale_gen:
+      name: en_US.UTF-8
+      state: present
+  - name: Add mcrouter user
+    user:
+      name: mcrouter
+      uid: 1000
+  install:
+  - name: Install mcrouter
+    apt:
+      name: [ 'mcrouter' ]
+      update_cache: yes
+  - name: Set directory permissions
+    file:
+      path: '{{`{{ item }}`}}'
+      state: directory
+      owner: mcrouter
+      recurse: yes
+    with_items:
+    - /var/mcrouter
+    - /var/spool/mcrouter

@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: mc
+  labels:
+    app: mc
+spec:
+  serviceName: mc
+  replicas: {{ pluck .Values.global.env .Values.memcached.replicas | first | default .Values.memcached.replicas._default }}
+  template:
+    metadata:
+      labels:
+        app: mc
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app: mc
+          topologyKey: kubernetes.io/hostname
+    spec:
+      containers:
+      - name: memcached
+        image: memcached:1.5.14
+        command:
+        - memcached
+        - -m {{ pluck .Values.global.env .Values.memcached.memory | first | default .Values.memcached.memory._default }}
+        - -o
+        - modern
+        - v
+        ports:
+        - name: memcached
+          containerPort: 11211
+        livenessProbe:
+          tcpSocket:
+            port: memcached
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          tcpSocket:
+            port: memcached
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+        resources:
+          requests:
+            cpu: {{ pluck .Values.global.env .Values.resources.memcached.requests.cpu | first | default .Values.resources.memcached.requests.cpu._default }}
+            memory: {{ pluck .Values.global.env .Values.resources.memcached.requests.memory | first | default .Values.resources.memcached.requests.memory._default }}
+          limits:
+            cpu: {{ pluck .Values.global.env .Values.resources.memcached.limits.cpu | first | default .Values.resources.memcached.limits.cpu._default }}
+            memory: {{ pluck .Values.global.env .Values.resources.memcached.limits.memory | first | default .Values.resources.memcached.limits.memory._default }}

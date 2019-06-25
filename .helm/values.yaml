@@ -1,0 +1,46 @@
+mcrouter:
+  replicas:
+    _default: 1
+
+memcached:
+  replicas:
+    _default: 1
+    production: 3
+  memory:
+    _default: 64
+    production: 1024
+
+registry:
+  secret_name: registrysecret
+
+resources:
+  memcached:
+    requests:
+      cpu:
+        _default: 50m
+        production: 500m
+      memory:
+        _default: 100Mi
+        production: 2Gi
+    limits:
+      cpu:
+        _default: 100m
+        production: 2
+      memory:
+        _default: 100Mi
+        production: 2Gi
+  mcrouter:
+    requests:
+      cpu:
+        _default: 50m
+        production: 500m
+      memory:
+        _default: 100Mi
+        production: 2Gi
+    limits:
+      cpu:
+        _default: 100m
+        production: 2
+      memory:
+        _default: 100Mi
+        production: 2Gi

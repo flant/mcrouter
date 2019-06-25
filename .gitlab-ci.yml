@@ -1,0 +1,49 @@
+.base_deploy: &base_deploy
+  stage: deploy
+  script:
+    - source <(~/bin/multiwerf use 1.0 beta)
+    - source <(werf ci-env gitlab --tagging-strategy tag-or-branch)
+    - export WERF_STAGES_STORAGE=":local"
+    - werf deploy
+  dependencies:
+    - build
+  tags:
+    - werf
+
+stages:
+  - build
+  - deploy
+  - cleanup
+
+build:
+  stage: build
+  script:
+    - source <(multiwerf use 1.0 beta)
+    - source <(werf ci-env gitlab --tagging-strategy tag-or-branch --verbose)
+    - export WERF_STAGES_STORAGE=":local"
+    - werf build-and-publish
+  except:
+    - schedules
+  tags:
+    - werf
+
+Deploy to Production:
+  <<: *base_deploy
+  environment:
+    name: production
+  only:
+    - tags
+  except:
+    - schedules
+  when: manual
+
+Cleanup stages storage and images repo:
+  stage: cleanup
+  script:
+    - source <(multiwerf use 1.0 beta)
+    - source <(werf ci-env gitlab --tagging-strategy tag-or-branch --verbose)
+    - export WERF_STAGES_STORAGE=":local"
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY_IMAGE}
+    - werf cleanup
+  only:
+    - schedules
