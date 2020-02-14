@@ -58,13 +58,13 @@ spec:
     metadata:
       labels:
         app: mcrouter
-    affinity:
-      podAntiAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-        - labelSelector:
-            matchLabels:
-              app: mcrouter
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: mcrouter
       imagePullSecrets:
       - name: {{ required ".Values.registry.secret_name" .Values.registry.secret_name }}
       volumes:

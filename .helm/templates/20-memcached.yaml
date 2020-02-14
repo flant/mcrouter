@@ -12,14 +12,14 @@ spec:
     metadata:
       labels:
         app: mc
-    affinity:
-      podAntiAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-        - labelSelector:
-            matchLabels:
-              app: mc
-          topologyKey: kubernetes.io/hostname
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: mc
+            topologyKey: kubernetes.io/hostname
       containers:
       - name: memcached
         image: memcached:1.5.14
