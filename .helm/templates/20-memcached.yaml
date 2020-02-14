@@ -22,7 +22,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: memcached
-        image: memcached:1.5.14
+        image: memcached:1.5.22
         command:
         - memcached
         - -m {{ pluck .Values.global.env .Values.memcached.memory | first | default .Values.memcached.memory._default }}
