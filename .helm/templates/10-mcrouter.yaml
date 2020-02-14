@@ -45,7 +45,7 @@ spec:
   - name: mcrouter
     port: 11211
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mcrouter
@@ -53,11 +53,14 @@ metadata:
     app: mcrouter
 spec:
   serviceName: mcrouter
-  replicas: {{ pluck .Values.global.env .Values.mcrouter.replicas | first | default .Values.mcrouter.replicas._default }}
+  selector:
+    matchLabels:
+      app: mcrouter
   template:
     metadata:
       labels:
         app: mcrouter
+  replicas: {{ pluck .Values.global.env .Values.mcrouter.replicas | first | default .Values.mcrouter.replicas._default }}
     spec:
       affinity:
         podAntiAffinity:

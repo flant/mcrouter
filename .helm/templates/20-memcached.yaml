@@ -1,5 +1,5 @@
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mc
@@ -7,11 +7,14 @@ metadata:
     app: mc
 spec:
   serviceName: mc
-  replicas: {{ pluck .Values.global.env .Values.memcached.replicas | first | default .Values.memcached.replicas._default }}
+  selector:
+    matchLabels:
+      app: mc
   template:
     metadata:
       labels:
         app: mc
+  replicas: {{ pluck .Values.global.env .Values.memcached.replicas | first | default .Values.memcached.replicas._default }}
     spec:
       affinity:
         podAntiAffinity:
