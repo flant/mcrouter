@@ -37,6 +37,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mcrouter
+  labels:
+    prometheus-custom-target: mcrouter
 spec:
   selector:
     app: mcrouter
@@ -44,6 +46,8 @@ spec:
   ports:
   - name: mcrouter
     port: 11211
+  - name: http-metrics
+    port: 9442
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -108,3 +112,17 @@ spec:
           limits:
             cpu: {{ pluck .Values.global.env .Values.resources.mcrouter.limits.cpu | first | default .Values.resources.mcrouter.limits.cpu._default }}
             memory: {{ pluck .Values.global.env .Values.resources.mcrouter.limits.memory | first | default .Values.resources.mcrouter.limits.memory._default }}
+      - name: exporter
+        image: quay.io/dev25/mcrouter_exporter:latest
+        command: [ '/usr/local/bin/mcrouter_exporter', '-mcrouter.server_metrics', '-mcrouter.address', 'localhost:11211' ]
+        securityContext:
+          runAsUser: 1000
+        ports:
+        - containerPort: 9442
+          name: http-metrics
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            memory: 256Mi

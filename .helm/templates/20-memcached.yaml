@@ -1,4 +1,23 @@
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mc
+  labels:
+    prometheus-target: memcached
+spec:
+  clusterIP: None
+  ports:
+  - name: memcached
+    port: 11211
+    targetPort: 11211
+  - name: http-metrics
+    port: 9150
+    protocol: TCP
+    targetPort: 9150
+  selector:
+    app: mc
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -52,3 +71,18 @@ spec:
           limits:
             cpu: {{ pluck .Values.global.env .Values.resources.memcached.limits.cpu | first | default .Values.resources.memcached.limits.cpu._default }}
             memory: {{ pluck .Values.global.env .Values.resources.memcached.limits.memory | first | default .Values.resources.memcached.limits.memory._default }}
+      - name: exporter
+        image: quay.io/prometheus/memcached-exporter:v0.6.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9150
+          name: http-metrics
+          protocol: TCP
+        securityContext:
+          runAsUser: 1000
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            memory: 256Mi
